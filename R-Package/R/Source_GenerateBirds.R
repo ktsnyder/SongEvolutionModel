@@ -17,7 +17,7 @@ GenerateFounderMales <- function(P){
   #If Females choose males based on matching to their mental template, add the following
   if(P$MatPref != 0 || P$SMat == TRUE){
     TerritorialMales[["FSongs"]] <- CreateFemaleSongs(P)
-    if(P$MDial == "Similar"){
+    if(P$MDial == "Similar" && P$Dial != 1){
       TerritorialMales$MSongs <- EstablishDialects(P, TerritorialMales$MSongs)
     }else if(P$MDial == "Same"){
       TerritorialMales$MSongs <- TerritorialMales$FSongs

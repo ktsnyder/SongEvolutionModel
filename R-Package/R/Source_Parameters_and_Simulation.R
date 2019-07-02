@@ -217,10 +217,10 @@ CheckP <- function(P){
          4) Must be less than or equal to MaxSylRepSize/(InitialSylRepSize*(1+2*PrcntSylOverhang)).")
   }
   if((P$MDial %in% c("None", "Similar", "Same")) == FALSE){
-    stop("MaleDialects must None, Similar, or Same.")
+    stop("MaleDialects must be None, Similar, or Same.")
   }
   if((P$ConsenS %in% c("Conform", "AllNone", "Percentage")) == FALSE){
-    stop("MaleDialects must Conform, AllNone, or Percentage.")
+    stop("Consensus Strategy must be Conform, AllNone, or Percentage.")
   }
   if(P$RepPref+P$MatPref > 1){
     stop("RepSizePrefer+MatchPrefer cannot exceed 1")
