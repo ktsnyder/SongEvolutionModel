@@ -115,7 +115,8 @@ LoadData <- function(Direct, NSims=4000, Freq=200){
                           PLrnPnlty=numeric(Leng), ChanInv=numeric(Leng), ChanFor=numeric(Leng), NumTut=numeric(Leng),
                           AccNoise=numeric(Leng),
                           Vertical=logical(Leng), LisThrsh=numeric(Leng), FthrLisThrsh=numeric(Leng),
-                          Main=character(Leng),
+                          Main=character(Leng), Breed=logical(Leng), Tutor=logical(Leng),
+                          Dial=numeric(Leng), MDial=character(Leng),
                           Acc=numeric(Leng), LrnThsh=numeric(Leng), Match=numeric(Leng), RepSize=numeric(Leng),
                           stringsAsFactors = FALSE)
   RBoxer <- data.frame(matrix(0,nrow=50,ncol=length(Usable)))
@@ -157,7 +158,8 @@ LoadData <- function(Direct, NSims=4000, Freq=200){
     
     Param <- c(P$RepPref, P$MatPref, Strat, P$RSize0,
                P$Acc0, P$LrnThrsh0, P$Lpen, P$CtI0, P$CtF0, P$ConNoTut,
-               P$IAccN, P$Vert,  P$LisThrsh, P$FLisThrsh, VO)
+               P$IAccN, P$Vert,  P$LisThrsh, P$FLisThrsh, VO,
+               P$ScopeB, P$ScopeT, P$Dial, P$MDial)
     FinalData[i*2-1,] <- c(Param,Init)
     FinalData[i*2,] <- c(Param,End)
     RBoxer[,i] <- data$SylRep[seq(interval,length(data[,1]),interval)]
