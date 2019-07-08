@@ -54,15 +54,14 @@ namespace SongEvolutionModel
         bool chanForAll, bool chanInvAll){
             Stopwatch Local = new Stopwatch();
             Local.Start();
-            Console.WriteLine(fileName);
-
             //Get Parameters and run appropriate Simulation
             SimParams Par = new SimParams(reload:true, path: fileName);
             WriteData Temp;
             WriteData Full = Simulations.Interval(Par, frequency, repAll,
                 matchAll, ageAll, lrnThrshAll, accAll, chanForAll, chanInvAll);
             for(int j=1;j<repeats;j++){
-                Temp = Simulations.Interval(Par, frequency, false);
+                Temp = Simulations.Interval(Par, frequency, repAll,
+                matchAll, ageAll, lrnThrshAll, accAll, chanForAll, chanInvAll);
                 Full.ConCat(Par, Temp);
             }
 
