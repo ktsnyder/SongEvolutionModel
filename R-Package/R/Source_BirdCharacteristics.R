@@ -13,10 +13,25 @@ GenerateNovelSong <- function(P, numTemplates){
   #to do so and makes the logical into numeric.  Then append on 0s to make max repsize.
 
   SylProb <- c(rep(.9, P$RSize0),rep(.1, P$RSize0*P$PerROh),rep(.01,P$RSize0*P$PerROh))
-  Chances <- runif(length(SylProb)*numTemplates)
-  SongCore <- matrix(as.numeric(Chances < SylProb), nrow=numTemplates, byrow=TRUE)
+  
+  SongCore <- t(sapply(1:numTemplates, function(x) MakeSongCore(SylProb)))
   FullSong <- cbind(SongCore, matrix(0, ncol=P$MaxRSize-length(SylProb), nrow=numTemplates))
   return(FullSong)
+}
+
+#' Make Song Core
+#'
+#' Picks syllables based on syllProb and prevnts birds from having a syllable repertoire of 0 syllables.
+#' @param sylProb the probability to know each syllable in the song core.
+#' @keywords song-template
+#' @export
+MakeSongCore <- function(sylProb){
+  SongCore <- 0
+  while(sum(SongCore)==0){
+    Chances <- runif(length(sylProb))
+    SongCore <- as.numeric(Chances < sylProb)
+  }
+  return(SongCore)
 }
 
 
