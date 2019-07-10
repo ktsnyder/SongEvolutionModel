@@ -139,19 +139,7 @@ EstablishDialects <- function(P, fSongs){
   #Set up the dialects; they are derivatives of the initial song
   #offset by the initial repsize
 
-  #get prime factorization of Dial to see how it can be best
-  #fit into the matrix space
-  Facts <- primeFactors(P$Dial)
-  if(length(Facts) == 1){#Dial is prime
-    Divisors <- c(Facts,1)
-  }else{#Dial is not prime
-    Divisors <- c(prod(Facts[seq(1,length(Facts),2)]),
-                  prod(Facts[seq(2,length(Facts),2)]))
-  }
-  if(P$R < P$C){#Make sure that the larger divisor is matched with the larger dimention
-    Divisors <- rev(Divisors)
-  }
-
+  Divisors <- GetDivisors(P)
   #get dimentions of a dialect submatrix and make final song matrix
   SplitRow <- P$R/Divisors[1]
   SplitCol <- P$C/Divisors[2]
@@ -170,6 +158,27 @@ EstablishDialects <- function(P, fSongs){
   return(fSongs)
 }
 
+#' Get Divisors
+#'
+#' Returns the dialect space dimentions based on matrix size and number of dialects.
+#' @param P a list of parameters
+#' @keywords song-template
+#' @export
+GetDivisors <- function(P){
+  #get prime factorization of Dial to see how it can be best
+  #fit into the matrix space
+  Facts <- primeFactors(P$Dial)
+  if(length(Facts) == 1){#Dial is prime
+    Divisors <- c(Facts,1)
+  }else{#Dial is not prime
+    Divisors <- c(prod(Facts[seq(1,length(Facts),2)]),
+                  prod(Facts[seq(2,length(Facts),2)]))
+  }
+  if(P$R < P$C){#Make sure that the larger divisor is matched with the larger dimention
+    Divisors <- rev(Divisors)
+  }
+  return (Divisors)
+}
 
 
 
