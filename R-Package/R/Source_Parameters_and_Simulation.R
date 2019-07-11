@@ -52,6 +52,9 @@
 #' @param MaleDialects whether males start the simulation with dialects; can be "None" (all males are similar to dialect 1), "Similar" (male songs are in teh correct syllable space, but are not identical to female songs), "Same" (male song temapltes are identicle to their female's template)
 #' @param FemaleEvolve whether the female templates can evolve (TRUE) or stay static throughout teh simmulation (FALSE)
 #' @param ChooseMate whether females can pick their mate (TRUE) or not (FALSE)
+#' @param SocialCues whether to allow males to pick tutors that bred previously with higher probability (TRUE) or not (FALSE)
+#' @param SocialBred The probability of picking a tutor that bred in the last timestep when SocialCues == TRUE
+#' @param SocialNotBred The probability of picking a tutor that did not breed in the last time step when SocialCues == TRUE
 #' @param SaveMatch whether to save matches; can be NA (the program decides based on other parameters) or TRUE/FALSE
 #' @param SaveAccuracy whether to save the accuracy values; can be NA (the program decides based on other parameters) or TRUE/FALSE
 #' @param SaveLearningThreshold whether to save the learning thresholds; can be NA (the program decides based on other parameters) or TRUE/FALSE
@@ -80,6 +83,7 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                              ObliqueLearning=TRUE, VerticalLearning=TRUE,
                              RepSizePrefer=1, LogScale=TRUE, MatchPrefer=0, UniformMatch=TRUE, MatchScale=1,
                              Dialects=1, MaleDialects="None", FemaleEvolve=FALSE, ChooseMate=FALSE,
+                             SocialCues=FALSE, SocialBred=.9, SocialNotBred=.1,
                              SaveMatch=NA, SaveAccuracy=NA, SaveLearningThreshold=NA, SaveChancetoInvent=NA, SaveChancetoForget=NA,
                              SaveNames=FALSE, SaveAge=FALSE, SaveMaleSong=FALSE, SaveFemaleSong=FALSE,
                              numSim=1000, Seed=NA){
@@ -136,6 +140,7 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                            RepPref=RepSizePrefer, LogScl=LogScale, MatPref=MatchPrefer,
                            NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch, MScl=MatchScale,
                            Dial=Dialects, MDial=MaleDialects, FEvo=FemaleEvolve, ChoMate=ChooseMate,
+                           Social=SocialCues, SocialBred=SocialBred, SocialNotBred=SocialNotBred,
                            SMat=SaveMatch, SAcc=SaveAccuracy, SLrn=SaveLearningThreshold,
                            SCtI=SaveChancetoInvent, SCtF=SaveChancetoForget, SNam=SaveNames,
                            SAge=SaveAge, SMSng=SaveMaleSong, SFSng=SaveFemaleSong,
@@ -170,6 +175,8 @@ CheckP <- function(P){
   CheckMinMaxInt(P$MatPref, "MatchPrefer", 0, 1, TRUE, FALSE)
   CheckMinMaxInt(P$DeadThrsh,"DeathThreshold", .0001, .2*P$numBirds, TRUE, FALSE)
   CheckMinMaxInt(P$Pc,"ChickSurvival", .1, 1, TRUE, FALSE)
+  CheckMinMaxInt(P$SocialBred,"SocialBred", .01, .99, TRUE, FALSE)
+  CheckMinMaxInt(P$SocialNotBred,"SocialNotBred", .01, .99, TRUE, FALSE)
 
   #make sure bools are bool
   CheckBool(P$OvrLrn,"OverLearn")
@@ -190,6 +197,7 @@ CheckP <- function(P){
   CheckBool(P$ScopeB,"LocalBreed")
   CheckBool(P$ScopeT,"LocalTutor")
   CheckBool(P$Vert, "VerticalLearning")
+  CheckBool(P$Social,"SocialCues")
 
 
   #make sure all of the trait vals line up

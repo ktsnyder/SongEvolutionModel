@@ -22,7 +22,8 @@ DefineParameters(Rows = 20, Cols = 20, Steps = 1,
   ObliqueLearning = TRUE, VerticalLearning = TRUE, RepSizePrefer = 1,
   LogScale = TRUE, MatchPrefer = 0, UniformMatch = TRUE,
   MatchScale = 1, Dialects = 1, MaleDialects = "None",
-  FemaleEvolve = FALSE, ChooseMate = FALSE, SaveMatch = NA,
+  FemaleEvolve = FALSE, ChooseMate = FALSE, SocialCues = FALSE,
+  SocialBred = 0.9, SocialNotBred = 0.1, SaveMatch = NA,
   SaveAccuracy = NA, SaveLearningThreshold = NA,
   SaveChancetoInvent = NA, SaveChancetoForget = NA,
   SaveNames = FALSE, SaveAge = FALSE, SaveMaleSong = FALSE,
@@ -122,6 +123,12 @@ DefineParameters(Rows = 20, Cols = 20, Steps = 1,
 \item{FemaleEvolve}{whether the female templates can evolve (TRUE) or stay static throughout teh simmulation (FALSE)}
 
 \item{ChooseMate}{whether females can pick their mate (TRUE) or not (FALSE)}
+
+\item{SocialCues}{whether to allow males to pick tutors that bred previously with higher probability (TRUE) or not (FALSE)}
+
+\item{SocialBred}{The probability of picking a tutor that bred in the last timestep when SocialCues == TRUE}
+
+\item{SocialNotBred}{The probability of picking a tutor that did not breed in the last time step when SocialCues == TRUE}
 
 \item{SaveMatch}{whether to save matches; can be NA (the program decides based on other parameters) or TRUE/FALSE}
 
