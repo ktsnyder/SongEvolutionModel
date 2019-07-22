@@ -271,8 +271,8 @@ CheckP <- function(P){
   if(P$FEvo == TRUE && P$MatPref ==0){
     warning("FemaleEvolve implimented only when females have a match preference > 0.")
   }
-  if(P$MatPref == 0 && P$MDial != "None"){
-    warning("MaleDialects only implemented when MatchPrefer is > 0.")
+  if(P$MatPref == 0 && !P$SMat && P$MDial != "None"){
+    warning("MaleDialects only implemented when MatchPrefer is > 0 or or SaveMatch is manually set to TRUE.")
   }
   if(P$MScl != 1){
     warning("MatchScale is not yet implemented!!!")
