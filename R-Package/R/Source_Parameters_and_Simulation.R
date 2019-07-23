@@ -326,7 +326,7 @@ CheckTrait <- function(initial, noise, min, max, name, absMax=1){
 #' @keywords error-check
 #' @export
 CheckMinMaxInt <- function(value, valueName, min=0, max=1, maxed=FALSE, int=TRUE){
-  if(value < min){stop(paste(valuename, "cannot be less than",min,"."))}
+  if(value < min){stop(paste(valueName, "cannot be less than",min,"."))}
   if(maxed){if(value>max){stop(paste(valueName, "cannot be greater than",max,"."))}}
   if(int){if(value%%1 !=0){stop(paste(valueName, "must be an integer."))}}
 }
