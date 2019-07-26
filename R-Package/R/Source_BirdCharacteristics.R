@@ -140,9 +140,11 @@ EstablishDialects <- function(P, fSongs){
   #offset by the initial repsize
 
   Divisors <- GetDivisors(P)
+  
   #get dimentions of a dialect submatrix and make final song matrix
   SplitRow <- P$R/Divisors[1]
   SplitCol <- P$C/Divisors[2]
+  
   k <- 1
   for(i in 1:Divisors[1]){#populate in the dialects
     for(j in 1:Divisors[2]){
@@ -167,15 +169,20 @@ EstablishDialects <- function(P, fSongs){
 GetDivisors <- function(P){
   #get prime factorization of Dial to see how it can be best
   #fit into the matrix space
-  Facts <- primeFactors(P$Dial)
-  if(length(Facts) == 1){#Dial is prime
-    Divisors <- c(Facts,1)
-  }else{#Dial is not prime
-    Divisors <- c(prod(Facts[seq(1,length(Facts),2)]),
-                  prod(Facts[seq(2,length(Facts),2)]))
-  }
-  if(P$R < P$C){#Make sure that the larger divisor is matched with the larger dimention
-    Divisors <- rev(Divisors)
+  Facts <- rev(primeFactors(P$Dial))
+  Divisors <- c(1,1)
+  for(i in seq_along(Facts)){
+    if(P$R%%(Facts[i]*Divisors[1])!=0){#rows not divisible by factor
+      Divisors[2] <- Divisors[2]*Facts[i]
+    }else if(P$C%%(Facts[i]*Divisors[2])!=0){#cols not divisible by factor
+      Divisors[1] <- Divisors[1]*Facts[i]
+    }else{
+      if(Facts[i]*Divisors[1]/P$R < Facts[i]*Divisors[2]/P$C){ #affects Cols more than rows
+        Divisors[1] <- Divisors[1]*Facts[i]
+      }else{#affects rows more or equally to cols
+        Divisors[2] <- Divisors[2]*Facts[i]
+      }
+    }
   }
   return (Divisors)
 }
