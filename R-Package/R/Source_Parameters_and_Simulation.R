@@ -46,6 +46,8 @@
 #' @param RepSizePrefer the fraction of female preference dedicated to larger repertoires
 #' @param LogScale whether females percieve repertoire size on a natural log scale (TRUE) or not (FALSE)
 #' @param MatchPrefer the fraction of female preference dedicated to template matching
+#' @param FrequencyPrefer the fraction of female preference dedicated to common or rare syllables
+#' @param Rare whether females prefer rares (TRUE) or more common (FALSE) syllables
 #' @param UniformMatch whether all females have the same song template (TRUE) or variations on a template (FALSE)
 #' @param MatchScale an equation for how matching is perceived; not yet implemented!
 #' @param Dialects the number of dialects; must be a factor of the matrix size
@@ -81,7 +83,9 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                              ConsensusNoTut=8, ConsensusStrategy="Conform",
                              OverLearn=FALSE, OverLearnNoTut=3, VerticalLearnCutOff=.25,
                              ObliqueLearning=TRUE, VerticalLearning=TRUE,
-                             RepSizePrefer=1, LogScale=TRUE, MatchPrefer=0, UniformMatch=TRUE, MatchScale=1,
+                             RepSizePrefer=1, LogScale=TRUE, MatchPrefer=0,
+                             FrequencyPrefer=0, Rare=TRUE,
+                             UniformMatch=TRUE, MatchScale=1,
                              Dialects=1, MaleDialects="None", FemaleEvolve=FALSE, ChooseMate=FALSE,
                              SocialCues=FALSE, SocialBred=.9, SocialNotBred=.1,
                              SaveMatch=NA, SaveAccuracy=NA, SaveLearningThreshold=NA, SaveChancetoInvent=NA, SaveChancetoForget=NA,
@@ -138,6 +142,7 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                            Obliq=ObliqueLearning, Vert=VerticalLearning,
                            VertLrnCut=VerticalLearnCutOff,
                            RepPref=RepSizePrefer, LogScl=LogScale, MatPref=MatchPrefer,
+                           FrePrefer=FrequencyPrefer, Rare=Rare,
                            NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch, MScl=MatchScale,
                            Dial=Dialects, MDial=MaleDialects, FEvo=FemaleEvolve, ChoMate=ChooseMate,
                            Social=SocialCues, SocialBred=SocialBred, SocialNotBred=SocialNotBred,
@@ -173,6 +178,7 @@ CheckP <- function(P){
   CheckMinMaxInt(P$PDead,"PrcntRandomDeath", .01, .9, TRUE, FALSE)
   CheckMinMaxInt(P$RepPref, "RepSizePrefer", 0, 1, TRUE, FALSE)
   CheckMinMaxInt(P$MatPref, "MatchPrefer", 0, 1, TRUE, FALSE)
+  CheckMinMaxInt(P$FreqPref, "FrequencyPrefer", 0, 1, TRUE, FALSE)
   CheckMinMaxInt(P$DeadThrsh,"DeathThreshold", .0001, .2*P$numBirds, TRUE, FALSE)
   CheckMinMaxInt(P$Pc,"ChickSurvival", .1, 1, TRUE, FALSE)
   CheckMinMaxInt(P$SocialBred,"SocialBred", .01, .99, TRUE, FALSE)
@@ -198,6 +204,7 @@ CheckP <- function(P){
   CheckBool(P$ScopeT,"LocalTutor")
   CheckBool(P$Vert, "VerticalLearning")
   CheckBool(P$Social,"SocialCues")
+  CheckBool(P$Rare,"Rare")
 
 
   #make sure all of the trait vals line up
@@ -230,8 +237,8 @@ CheckP <- function(P){
   if((P$ConsenS %in% c("Conform", "AllNone", "Percentage")) == FALSE){
     stop("Consensus Strategy must be Conform, AllNone, or Percentage.")
   }
-  if(P$RepPref+P$MatPref > 1){
-    stop("RepSizePrefer+MatchPrefer cannot exceed 1")
+  if(P$RepPref+P$MatPref+P$FreqPrefr > 1){
+    stop("RepSizePrefer + MatchPrefer + FrequencyPrefer cannot exceed 1")
   }
 
   if(is.na(P$Seed)==FALSE && is.numeric(P$Seed) == FALSE){
