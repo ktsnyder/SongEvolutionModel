@@ -330,6 +330,7 @@ ClusterPlot <- function(P, trait){
     Max[i] <- ClusterCalc(P,MaxMat)
     Min[i] <- ClusterCalc(P,MinMat)
   }
+  
   #get pvalues
   UnReal <- rowMeans(UnReal)
   print(mean(ppert(Real, min=Min, mode=UnReal, max=Max)))
