@@ -20,11 +20,11 @@ DefineParameters(Rows = 20, Cols = 20, Steps = 1,
   ConsensusNoTut = 8, ConsensusStrategy = "Conform",
   OverLearn = FALSE, OverLearnNoTut = 3, VerticalLearnCutOff = 0.25,
   ObliqueLearning = TRUE, VerticalLearning = TRUE, RepSizePrefer = 1,
-  LogScale = TRUE, MatchPrefer = 0, UniformMatch = TRUE,
-  MatchScale = 1, Dialects = 1, MaleDialects = "None",
-  FemaleEvolve = FALSE, ChooseMate = FALSE, SocialCues = FALSE,
-  SocialBred = 0.9, SocialNotBred = 0.1, SaveMatch = NA,
-  SaveAccuracy = NA, SaveLearningThreshold = NA,
+  LogScale = TRUE, MatchPrefer = 0, FrequencyPrefer = 0,
+  Rare = TRUE, UniformMatch = TRUE, MatchScale = 1, Dialects = 1,
+  MaleDialects = "None", FemaleEvolve = FALSE, ChooseMate = FALSE,
+  SocialCues = FALSE, SocialBred = 0.9, SocialNotBred = 0.1,
+  SaveMatch = NA, SaveAccuracy = NA, SaveLearningThreshold = NA,
   SaveChancetoInvent = NA, SaveChancetoForget = NA,
   SaveNames = FALSE, SaveAge = FALSE, SaveMaleSong = FALSE,
   SaveFemaleSong = FALSE, numSim = 1000, Seed = NA)
@@ -111,6 +111,10 @@ DefineParameters(Rows = 20, Cols = 20, Steps = 1,
 \item{LogScale}{whether females percieve repertoire size on a natural log scale (TRUE) or not (FALSE)}
 
 \item{MatchPrefer}{the fraction of female preference dedicated to template matching}
+
+\item{FrequencyPrefer}{the fraction of female preference dedicated to common or rare syllables}
+
+\item{Rare}{whether females prefer rares (TRUE) or more common (FALSE) syllables}
 
 \item{UniformMatch}{whether all females have the same song template (TRUE) or variations on a template (FALSE)}
 

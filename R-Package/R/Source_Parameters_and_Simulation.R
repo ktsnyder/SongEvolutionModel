@@ -299,6 +299,7 @@ CheckP <- function(P){
 #' @keywords error-check
 #' @export
 CheckTrait <- function(initial, noise, min, max, name, absMax=1){
+  
   if(min >= max){
     stop(paste("The min for", name, "must be less than the max."))
   }
