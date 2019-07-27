@@ -144,21 +144,32 @@ SongPlot <- function(P, songs, thin = 10, male=TRUE){
 #' @param P a list of parameters
 #' @param index which column to plot
 #' @param trait a matrix of SEM data from a Basic sim (individual data)
+#' @param max the maximum value for the color scale; defaults to the max value in the data in a time step. 
+#' @param title the title (main)
+#' @param xlab the x label
+#' @param ylab the y label
+#' @param font.lab the font style; same as for default plotting.
+#' @param Letter What letter to add to figure
+#' @param LetterLine horizontally positions letter
 #' @keywords stats-plotting
 #' @export
-TerritoryHeatMap <- function(P, index=1, trait, max=NA){
+TerritoryHeatMap <- function(P, index=1, trait, max=NA,
+                             title="", xlab="", ylab="", font.lab=1, Letter='',
+                             LetterLine=1.5, LetterHeight=-1){
   if(is.na(max)){
     max <- max(trait[,index])
   }
     Matter <- matrix(trait[,index]/max, nrow=P$R)
     plot(0,type="n", ylim=c(P$C,0), xlim=c(0,P$R),
-         ylab="", xlab="")
+         ylab=ylab, xlab=xlab,
+         main=title, font.lab=font.lab)
     for(i in 1:P$R){#x
       for(j in 1:P$C){#y
         rect(i-1, j-1, i, j, col=rgb(0,0,0,Matter[i,j]), border=NA)
       }
     }
-  }
+    mtext(Letter, side=2, at=LetterHeight, line=LetterLine, las=1, cex=.8)
+}
 
 #Plotting lineages (requires saving Name and FatherName UUIDs)
 #' Family Tree Plot
