@@ -142,7 +142,7 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                            Obliq=ObliqueLearning, Vert=VerticalLearning,
                            VertLrnCut=VerticalLearnCutOff,
                            RepPref=RepSizePrefer, LogScl=LogScale, MatPref=MatchPrefer,
-                           FrePrefer=FrequencyPrefer, Rare=Rare,
+                           FreqPref=FrequencyPrefer, Rare=Rare,
                            NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch, MScl=MatchScale,
                            Dial=Dialects, MDial=MaleDialects, FEvo=FemaleEvolve, ChoMate=ChooseMate,
                            Social=SocialCues, SocialBred=SocialBred, SocialNotBred=SocialNotBred,
@@ -237,7 +237,7 @@ CheckP <- function(P){
   if((P$ConsenS %in% c("Conform", "AllNone", "Percentage")) == FALSE){
     stop("Consensus Strategy must be Conform, AllNone, or Percentage.")
   }
-  if(P$RepPref+P$MatPref+P$FreqPrefr > 1){
+  if(P$RepPref+P$MatPref+P$FreqPref > 1){
     stop("RepSizePrefer + MatchPrefer + FrequencyPrefer cannot exceed 1")
   }
 
