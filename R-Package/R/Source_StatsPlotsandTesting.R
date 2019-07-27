@@ -160,12 +160,12 @@ TerritoryHeatMap <- function(P, index=1, trait, max=NA,
     max <- max(trait[,index])
   }
     Matter <- matrix(trait[,index]/max, nrow=P$R)
-    plot(0,type="n", ylim=c(P$C,0), xlim=c(0,P$R),
+    plot(0,type="n", ylim=c(P$R+1,0), xlim=c(0,P$C+1),
          ylab=ylab, xlab=xlab,
          main=title, font.lab=font.lab)
-    for(i in 1:P$R){#x
-      for(j in 1:P$C){#y
-        rect(i-1, j-1, i, j, col=rgb(0,0,0,Matter[i,j]), border=NA)
+    for(i in 1:P$C){#x
+      for(j in 1:P$R){#y
+        rect(i-.5, j-.5, i+.5, j+.5, col=rgb(0,0,0,Matter[j,i]), border=NA)
       }
     }
     mtext(Letter, side=2, at=LetterHeight, line=LetterLine, las=1, cex=.8)
