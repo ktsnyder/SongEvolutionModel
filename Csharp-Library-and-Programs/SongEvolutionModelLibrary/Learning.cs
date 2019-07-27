@@ -219,14 +219,27 @@ namespace SongEvolutionModelLibrary
                 HashSet<int> Unavailable = new HashSet<int>(Enumerable.Range(0, par.NumBirds));
                 Unavailable.ExceptWith(PotentialTutorsTemp);
                 for(int i=0;i<learners.Count;i++){
-                    Tutors[i] = Locations.GetLocalBirds(par, pop, learners[i], Unavailable)[0];
+                    if(par.SocialCues){
+                        Tutors[i] = Locations.GetLocalBirds(par, pop, learners[i], Unavailable, 1, pop.Bred)[0];
+                    }else{
+                        Tutors[i] = Locations.GetLocalBirds(par, pop, learners[i], Unavailable)[0];
+                    }
                 }
             }else{//drawn individually so no learner is his own tutor
                 List<int> PotentialTutors;
                 for(int i=0;i<learners.Count;i++){
                     PotentialTutors = PotentialTutorsTemp.ToList();
                     PotentialTutors.Remove(learners[i]);
-                    Tutors[i] = PotentialTutors[par.RandomSampleEqualReplace(PotentialTutors,1)[0]];
+
+                    if(par.SocialCues){
+                        float[] TutorProbs = new float[PotentialTutors.Count];
+                        for(int j=0;j<TutorProbs.Length;j++){
+                            TutorProbs[j] = pop.Bred[PotentialTutors[j]]; 
+                        }
+                        Tutors[i] = PotentialTutors[par.RandomSampleUnequal(TutorProbs, 1)[0]];
+                    }else{
+                        Tutors[i] = PotentialTutors[par.RandomSampleEqualReplace(PotentialTutors, 1)[0]];
+                    }
                 }
             }
             return(Tutors);
@@ -243,14 +256,30 @@ namespace SongEvolutionModelLibrary
                 HashSet<int> Unavailable = new HashSet<int>(Enumerable.Range(0, par.NumBirds));
                 Unavailable.ExceptWith(PotentialTutorsTemp);
                 for(int i=0;i<learners.Count;i++){
-                    Tutors[i] = Locations.GetLocalBirds(par, pop, learners[i], Unavailable, numTutors).ToList();
+                    if(par.SocialCues){
+                        Tutors[i] = Locations.GetLocalBirds(par, pop, learners[i], Unavailable, numTutors, pop.Bred).ToList();
+                    }else{
+                        Tutors[i] = Locations.GetLocalBirds(par, pop, learners[i], Unavailable, numTutors).ToList();
+                    }
                 }
             }else{
                 List<int> PotentialTutors;
                 for(int i=0;i<learners.Count;i++){
                     PotentialTutors = PotentialTutorsTemp.ToList();
                     PotentialTutors.Remove(learners[i]);
-                    Tutors[i] = par.RandomSampleEqualNoReplace(PotentialTutors, numTutors).ToList();
+                    if(par.SocialCues){
+                        float[] TutorProbs = new float[PotentialTutors.Count];
+                        for(int j=0;j<TutorProbs.Length;j++){
+                            TutorProbs[j] = pop.Bred[PotentialTutors[j]];
+                        }
+                        int[] ChosenIndex = par.RandomSampleUnequal(TutorProbs, numTutors);
+                        for(int j=0;j<numTutors;j++){
+                            ChosenIndex[j] = PotentialTutors[ChosenIndex[j]];
+                        }
+                        Tutors[i] = ChosenIndex.ToList();
+                    }else{
+                        Tutors[i] = par.RandomSampleEqualNoReplace(PotentialTutors, numTutors).ToList();
+                    }
                 }
             }
             return(Tutors);
