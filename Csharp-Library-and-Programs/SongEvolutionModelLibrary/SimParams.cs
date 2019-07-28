@@ -133,8 +133,8 @@ namespace SongEvolutionModelLibrary{
                     FrequencyPreference=float.Parse(Params[50], CultureInfo.InvariantCulture);
                     RarePrefered=System.Convert.ToBoolean(Params[51]);
                     SocialPreference=float.Parse(Params[52], CultureInfo.InvariantCulture);
-                    InheritedPreferenceNoise=float.Parse(Params[54], CultureInfo.InvariantCulture);
-                    NoisePreference=float.Parse(Params[53], CultureInfo.InvariantCulture);
+                    InheritedPreferenceNoise=float.Parse(Params[53], CultureInfo.InvariantCulture);
+                    NoisePreference=float.Parse(Params[54], CultureInfo.InvariantCulture);
                     MatchUniform=System.Convert.ToBoolean(Params[55]);
                     NumDialects=System.Convert.ToInt32(Params[56]);
                     MaleDialects=Params[57].Replace("\r", "");
