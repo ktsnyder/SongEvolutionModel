@@ -291,6 +291,7 @@ CheckEncouter <- function(P, learners){
 #' @param misc a matrix of positions of other birds that are excluded for some reason (e.g. already for consensus tutors)
 #' @keywords song-learning
 #' @export
+#' 
 ChooseTutors <- function(P, population, learners, vacancy, misc=rep(0,length(learners))){
   #Males who cannot be tutors
   SonglessFledge <- unique(c(vacancy, which(population$Males$SylRep == 0),which(population$Males$Age == 0)))
@@ -301,16 +302,26 @@ ChooseTutors <- function(P, population, learners, vacancy, misc=rep(0,length(lea
     #A single male can tutor mutliple young males if he is local to multiple young males
     for(i in seq_along(learners)){
       #get local males, test if available, if not, look further away, then sample ot get tutor
-      PotentialTutors <- LocalSearch(P,population, learners[i], Exclude[i,])
+      PotentialTutors <- LocalSearch(P, population, learners[i], Exclude[i,])
       if(length(PotentialTutors)==1){
         Tutors[i] <- PotentialTutors
       }else{
-        Tutors[i] <- sample(PotentialTutors, 1)
+        if(P$Social){
+          Tutors[i] <- sample(PotentialTutors, 1, prob=popuation$Males$Bred[PotentialTutors])
+        }else{
+          Tutors[i] <- sample(PotentialTutors, 1) 
+        }
       }
     }
   }else{#global choice, still allows one male to tutor multiple males
-    Tutors <- sapply(seq_along(learners),
-                     function(x) sample((1:P$numBirds)[-(Exclude[x,])], 1))
+    if(P$Social){
+      Tutors <- sapply(seq_along(learners),
+                       function(x) sample((1:P$numBirds)[-(Exclude[x,])], 1,
+                                          prob=popuation$Males$Bred[-(Exclude[x,])]))  
+    }else{
+      Tutors <- sapply(seq_along(learners),
+                       function(x) sample((1:P$numBirds)[-(Exclude[x,])], 1))
+    }
   }
   return(Tutors)
 }

@@ -36,6 +36,12 @@ BirthDeathCycle <- function(P, population){
   }
   #allow for chicks to overlearn, update match and sylrep
   if(P$OvrLrn){population <- OverLearn(P, population, Vacancy)}
+  
+  #update breeding information
+  if(P$Social){
+    Pop$Males$Bred[FatherInd] <- P$SocialBred
+    Pop$Males$Bred[-FatherInd] <- P$SocialNotBred
+  }
 
   #update survival probability
   if(P$DStrat){population <- UpdateProbabilities(P, FatherInd, population)}

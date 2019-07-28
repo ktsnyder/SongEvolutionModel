@@ -98,21 +98,21 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
     InitProp <- 0
   }
 
-  if((LearnerStrategy %in% c("Add", "AddForget", "Forget", "Consensus")) == FALSE){
+  if(!(LearnerStrategy %in% c("Add", "AddForget", "Forget", "Consensus"))){
     stop("LearnerStrategy must be either Add, Forget, AddForget, or Consensus.")
   }
   if(LearnerStrategy == "Consensus"){
-    Consensus=TRUE
-    Add=TRUE
-    Forget=TRUE
+    Consensus <- TRUE
+    Add <- TRUE
+    Forget <- TRUE
   }else{
-    Consensus=FALSE
+    Consensus <- FALSE
     if(LearnerStrategy %in% c("Add", "AddForget")){
-      Add=TRUE
-    }else{Add=FALSE}
+      Add <- TRUE
+    }else{Add <- FALSE}
     if(LearnerStrategy %in% c("AddForget", "Forget")){
-      Forget=TRUE
-    }else{Forget=FALSE}
+      Forget <- TRUE
+    }else{Forget <- FALSE}
   }
 
   #match the saves
@@ -231,24 +231,24 @@ CheckP <- function(P){
          3) Must be a factor of the number of birds.
          4) Must be less than or equal to MaxSylRepSize/(InitialSylRepSize*(1+2*PrcntSylOverhang)).")
   }
-  if((P$MDial %in% c("None", "Similar", "Same")) == FALSE){
+  if(!(P$MDial %in% c("None", "Similar", "Same"))){
     stop("MaleDialects must be None, Similar, or Same.")
   }
-  if((P$ConsenS %in% c("Conform", "AllNone", "Percentage")) == FALSE){
+  if(!(P$ConsenS %in% c("Conform", "AllNone", "Percentage"))){
     stop("Consensus Strategy must be Conform, AllNone, or Percentage.")
   }
   if(P$RepPref+P$MatPref+P$FreqPref > 1){
     stop("RepSizePrefer + MatchPrefer + FrequencyPrefer cannot exceed 1")
   }
 
-  if(is.na(P$Seed)==FALSE && is.numeric(P$Seed) == FALSE){
+  if(!is.na(P$Seed) && !is.numeric(P$Seed)){
     stop("Seed must be a number or NA")
   }
-  if(P$MatPref == 0  && P$SMat == FALSE && P$SFSng == TRUE){
+  if(P$MatPref == 0  && !P$SMat && P$SFSng){
     stop("Cannot save female song unless it is generated.
          It is not generated unless 1) MatchPrefer > 0,
-         2) FemaleEvolve == TRUE,
-         or 3) SaveMatch == TRUE.")
+         2) FemaleEvolve = TRUE,
+         or 3) SaveMatch = TRUE.")
   }
   if((P$LisThrsh%%1 != 0 && P$LisThrsh > 1) || (P$LisThrsh > P$MaxRSize)  || P$LisThrsh < 0){
     stop(paste0("ListeningThreshold must either be an integer from 1 to MaxSylRepSize (", P$MaxRSize, ")",
@@ -275,13 +275,13 @@ CheckP <- function(P){
     warning("Small DeathThresholds decrease the chances that any birds will survive
             the selection process long enough to reach the MaxAge.")
   }
-  if(P$FEvo == TRUE && P$MatPref ==0){
+  if(P$FEvo && P$MatPref ==0){
     warning("FemaleEvolve implimented only when females have a match preference > 0.")
   }
   if(P$MatPref == 0 && !P$SMat && P$MDial != "None"){
     warning("MaleDialects only implemented when MatchPrefer is > 0 or or SaveMatch is manually set to TRUE.")
   }
-  if(P$MStrat %in% c("Match", "Presence")){
+  if(!(P$MStrat %in% c("Match", "Presence"))){
     warning("MatchStrategy must be Match or Presence.")
   }
   return(P)
@@ -445,7 +445,7 @@ ReloadParam <- function(filePath){
 SEMSimulation <- function(P, type='Basic', folderName=NA, save=TRUE, return=FALSE, verbose=TRUE, ...){
   Time <- proc.time()
   MiscArgs <- list(...)
-  if(is.na(P$Seed) == FALSE){
+  if(!is.na(P$Seed)){
     set.seed(P$Seed)
   }
 
@@ -454,7 +454,7 @@ SEMSimulation <- function(P, type='Basic', folderName=NA, save=TRUE, return=FALS
     if(is.na(folderName)){
       folderName <- file.path(format(Sys.time(), "%F_%H-%M-%S"))
     }
-    if(dir.exists(file.path(folderName)) == FALSE){
+    if(!dir.exists(file.path(folderName))){
       dir.create(file.path(folderName))
     }
   }
@@ -729,7 +729,7 @@ InsultSimulation <- function(P, insultP, when, freq=200){
       #fix songs if needed
       if( (P$Dial != insultP$Dial) ||
           (P$UniMat != insultP$UniMat) ||
-          (insultP$MatPref != 0 && (exists('FSongs', where=Population) == FALSE)) ){
+          (insultP$MatPref != 0 && !(exists('FSongs', where=Population))) ){
             Population[["FSongs"]] <- CreateFemaleSongs(insultP)
             Population$Males[["Match"]] <- TestMatch(P, Population$MSongs, Population$FSongs)
       }

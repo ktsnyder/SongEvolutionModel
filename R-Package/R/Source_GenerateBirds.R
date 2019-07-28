@@ -15,7 +15,7 @@ GenerateFounderMales <- function(P){
   TerritorialMales[["Males"]] <- GenerateAdultBirds(P, TerritorialMales$MSongs)
 
   #If Females choose males based on matching to their mental template, add the following
-  if(P$MatPref != 0 || P$SMat == TRUE){
+  if(P$MatPref != 0 || P$SMat){
     TerritorialMales[["FSongs"]] <- CreateFemaleSongs(P)
     if(P$MDial == "Similar" && P$Dial != 1){
       TerritorialMales$MSongs <- EstablishDialects(P, TerritorialMales$MSongs)
@@ -23,7 +23,7 @@ GenerateFounderMales <- function(P){
       TerritorialMales$MSongs <- TerritorialMales$FSongs
     }
     #Randomly assign females or allow to pair with males who match them best
-    if(P$FEvo == TRUE && P$ChoMate == TRUE  && P$MDial != "Same"){
+    if(P$FEvo && P$ChoMate  && P$MDial != "Same"){
       Assign <- AssignFemale(P, TerritorialMales$MSongs, TerritorialMales$FSongs)
       TerritorialMales$FSongs <- TerritorialMales$FSongs[Assign[[1]],]
       TerritorialMales$Males <- cbind(TerritorialMales$Males, Match = Assign[[2]])
@@ -38,8 +38,8 @@ GenerateFounderMales <- function(P){
   if(P$ScopeB || P$ScopeT){
     TerritorialMales[["Directions"]] <- FinalDirections(P)
   }
-
-
+  
+  
   #Death Parameters for type 2 survival curve
   if(P$DStrat){
     if(P$MAge == 1){
@@ -91,10 +91,16 @@ GenerateAdultBirds <- function(P, songs){
   #calc syl rep based on previously generated songs
   Males[,"SylRep"] <- rowSums(songs)
 
-  if(P$SNam == TRUE){#generate names if required
+  if(P$SNam){#generate names if required
     Males[,"FatherName"] <- rep(0, P$numBirds)
     Males[,"Name"] <- sapply(rep(TRUE,P$numBirds),UUIDgenerate)
   }
+  
+  #Social information
+  if(P$Social){
+    Males[,"Bred"] <- rep(P$SocialNotBred, 400)
+  }
+  
   return(Males)
 }
 
@@ -153,12 +159,12 @@ GenerateChicks <- function(P, fatherInd, territorialMales, vacancy){
   Males[,"SylRep"] <- rowSums(InherSong)
 
   #Generate names if required
-  if(P$SNam == TRUE){
+  if(P$SNam){
     Males[,"FatherName"] <- paste0(Fathers$Name)
     Males[,"name"] <- sapply(rep(TRUE,length(vacancy)),UUIDgenerate)
   }
   #Generate Match if required
-  if(P$MatPref != 0 || P$SMat == TRUE){
+  if(P$MatPref != 0 || P$SMat){
     Males[,"Match"] <- TestMatch(P, InherSong,territorialMales$FSongs[vacancy,])
   }
   Chicks <- list(Males=Males, MSongs=InherSong)

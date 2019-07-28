@@ -326,7 +326,7 @@ FinalDirections <- function(P){
   DirList[[1]] <- EachStep
   #####
   for(i in seq_along((P$Steps+1):(max(P$R, P$C)))){
-    DirList[[i+1]] <- NextStepDirectionsMain(DirList[[i]], StepOne)
+    DirList[[i+1]] <- NextStepDirections(DirList[[i]], StepOne)
   }
   #####
   return(DirList)
