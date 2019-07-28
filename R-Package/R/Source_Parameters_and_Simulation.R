@@ -85,6 +85,7 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                              ObliqueLearning=TRUE, VerticalLearning=TRUE,
                              RepSizePrefer=1, LogScale=TRUE, MatchPrefer=0,
                              FrequencyPrefer=0, Rare=TRUE,
+                             SocialPrefer=0, InherPreferenceNoise=0,
                              UniformMatch=TRUE, MatchStrategy="Match",
                              Dialects=1, MaleDialects="None", FemaleEvolve=FALSE, ChooseMate=FALSE,
                              SocialCues=FALSE, SocialBred=.9, SocialNotBred=.1,
@@ -141,9 +142,11 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                            ConNoTut=ConsensusNoTut, OvrLrn=OverLearn, OLNoTut=OverLearnNoTut,
                            Obliq=ObliqueLearning, Vert=VerticalLearning,
                            VertLrnCut=VerticalLearnCutOff,
-                           RepPref=RepSizePrefer, LogScl=LogScale, MatPref=MatchPrefer,
+                           RepPref=RepSizePrefer, LogScl=LogScale,
+                           MatPref=MatchPrefer, MStrat=MatchStrategy,
                            FreqPref=FrequencyPrefer, Rare=Rare,
-                           NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch, MStrat=MatchStrategy,
+                           SocPref=SocialPrefer, IPrefN=InherPreferenceNoise,
+                           NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch,
                            Dial=Dialects, MDial=MaleDialects, FEvo=FemaleEvolve, ChoMate=ChooseMate,
                            Social=SocialCues, SocialBred=SocialBred, SocialNotBred=SocialNotBred,
                            SMat=SaveMatch, SAcc=SaveAccuracy, SLrn=SaveLearningThreshold,
@@ -179,6 +182,8 @@ CheckP <- function(P){
   CheckMinMaxInt(P$RepPref, "RepSizePrefer", 0, 1, TRUE, FALSE)
   CheckMinMaxInt(P$MatPref, "MatchPrefer", 0, 1, TRUE, FALSE)
   CheckMinMaxInt(P$FreqPref, "FrequencyPrefer", 0, 1, TRUE, FALSE)
+  CheckMinMaxInt(P$SocPref, "SocialPrefer", 0, 1, TRUE, FALSE)
+  CheckMinMaxInt(P$IPrefN, "InherPreferNoise", 0, .5, TRUE, FALSE)
   CheckMinMaxInt(P$DeadThrsh,"DeathThreshold", .0001, .2*P$numBirds, TRUE, FALSE)
   CheckMinMaxInt(P$Pc,"ChickSurvival", .1, 1, TRUE, FALSE)
   CheckMinMaxInt(P$SocialBred,"SocialBred", .01, .99, TRUE, FALSE)
@@ -237,8 +242,8 @@ CheckP <- function(P){
   if(!(P$ConsenS %in% c("Conform", "AllNone", "Percentage"))){
     stop("Consensus Strategy must be Conform, AllNone, or Percentage.")
   }
-  if(P$RepPref+P$MatPref+P$FreqPref > 1){
-    stop("RepSizePrefer + MatchPrefer + FrequencyPrefer cannot exceed 1")
+  if(P$RepPref+P$MatPref+P$FreqPref+P$SocPref > 1){
+    stop("RepSizePrefer + MatchPrefer + FrequencyPrefer + SOcialPrefer cannot exceed 1")
   }
 
   if(!is.na(P$Seed) && !is.numeric(P$Seed)){

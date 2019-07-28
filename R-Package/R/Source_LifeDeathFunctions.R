@@ -18,6 +18,13 @@ BirthDeathCycle <- function(P, population){
     population <- ObliqueLearning(P, population, Vacancy)
     population$Males$Age[-Vacancy] <- population$Males$Age[-Vacancy] + 1
   }
+  
+  if(P$ChoMat){#Females can pick a male that matches them well
+    Assign <- AssignFemale(P, TerritorialBirds$MSongs,
+                           TerritorialBirds$FSongs)
+    TerritorialBirds$FSongs <- TerritorialBirds$FSongs[Assign[[1]],]
+    TerritorialBirds$Males$Match <- Assign[[2]]
+  }
 
   #Determine fathers and generate chicks
   FatherInd <- ChooseFathers(P, population, Vacancy)
@@ -25,15 +32,9 @@ BirthDeathCycle <- function(P, population){
   population$Males[Vacancy,] <- Chicks$Males
   population$MSongs[Vacancy,] <- Chicks$MSongs
 
-  #Allow for the female song to evolve and/or
-  #let them pick new mates if old mate deceased
+  #Allow females to die with their mates so female song evolves
   if(P$FEvo){population <- FemaleEvolve(P, population, Vacancy, FatherInd)}
-  if(P$ChoMat){#Females can pick a male that matches them well
-    Assign <- AssignFemale(P, TerritorialBirds$MSongs[Vacancy,],
-                           TerritorialBirds$FSongs[Vacancy,])
-    TerritorialBirds$FSongs[Vacancy,] <- TerritorialBirds$FSongs[Vacancy[Assign[[1]]],]
-    TerritorialBirds$males$Match[Vacancy] <- Assign[[2]]
-  }
+  
   #allow for chicks to overlearn, update match and sylrep
   if(P$OvrLrn){population <- OverLearn(P, population, Vacancy)}
   
@@ -141,6 +142,23 @@ GetReproductiveProbability <- function(P, population, usableInd){
     }
     Bonus <- Bonus + P$FreqPref*FreqBonus
   }
+  
+  
+  
+  #social
+  if(P$SocPref != 0){
+    Soc <- Choices$Bred
+    
+    WorstMale <- min(Soc)
+    if(max(Soc) == WorstMale){#if all males have the same rep size
+      SocBonus <- rep(1,length(usableInd))
+    }else{
+      Fraction <- 1/(max(Soc) - WorstMale)
+      RepBonus <- (Soc - WorstMale)*Fraction
+    }
+    Bonus <- Bonus + P$SocPref*SocBonus
+  }
+  
   
   Bonus[which(Bonus< .001)] <- .001
   return(Bonus)
