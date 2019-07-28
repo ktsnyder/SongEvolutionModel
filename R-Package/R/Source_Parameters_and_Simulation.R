@@ -49,7 +49,7 @@
 #' @param FrequencyPrefer the fraction of female preference dedicated to common or rare syllables
 #' @param Rare whether females prefer rares (TRUE) or more common (FALSE) syllables
 #' @param UniformMatch whether all females have the same song template (TRUE) or variations on a template (FALSE)
-#' @param MatchScale an equation for how matching is perceived; not yet implemented!
+#' @param MatchStrategy the way match is calculated; Can be either Match (male must have the correct syllables and no extras) or Presence (males must have ths correct syllables)
 #' @param Dialects the number of dialects; must be a factor of the matrix size
 #' @param MaleDialects whether males start the simulation with dialects; can be "None" (all males are similar to dialect 1), "Similar" (male songs are in teh correct syllable space, but are not identical to female songs), "Same" (male song temapltes are identicle to their female's template)
 #' @param FemaleEvolve whether the female templates can evolve (TRUE) or stay static throughout teh simmulation (FALSE)
@@ -85,7 +85,7 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                              ObliqueLearning=TRUE, VerticalLearning=TRUE,
                              RepSizePrefer=1, LogScale=TRUE, MatchPrefer=0,
                              FrequencyPrefer=0, Rare=TRUE,
-                             UniformMatch=TRUE, MatchScale=1,
+                             UniformMatch=TRUE, MatchStrategy="Match",
                              Dialects=1, MaleDialects="None", FemaleEvolve=FALSE, ChooseMate=FALSE,
                              SocialCues=FALSE, SocialBred=.9, SocialNotBred=.1,
                              SaveMatch=NA, SaveAccuracy=NA, SaveLearningThreshold=NA, SaveChancetoInvent=NA, SaveChancetoForget=NA,
@@ -143,7 +143,7 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                            VertLrnCut=VerticalLearnCutOff,
                            RepPref=RepSizePrefer, LogScl=LogScale, MatPref=MatchPrefer,
                            FreqPref=FrequencyPrefer, Rare=Rare,
-                           NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch, MScl=MatchScale,
+                           NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch, MStrat=MatchStrategy,
                            Dial=Dialects, MDial=MaleDialects, FEvo=FemaleEvolve, ChoMate=ChooseMate,
                            Social=SocialCues, SocialBred=SocialBred, SocialNotBred=SocialNotBred,
                            SMat=SaveMatch, SAcc=SaveAccuracy, SLrn=SaveLearningThreshold,
@@ -281,8 +281,8 @@ CheckP <- function(P){
   if(P$MatPref == 0 && !P$SMat && P$MDial != "None"){
     warning("MaleDialects only implemented when MatchPrefer is > 0 or or SaveMatch is manually set to TRUE.")
   }
-  if(P$MScl != 1){
-    warning("MatchScale is not yet implemented!!!")
+  if(P$MStrat %in% c("Match", "Presence")){
+    warning("MatchStrategy must be Match or Presence.")
   }
   return(P)
 }
