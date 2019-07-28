@@ -264,7 +264,9 @@ CheckP <- function(P){
                 "or a fraction representing a precentage.*
                 *If .999 or greater is typed, it is converted to 100%."))
   }
-
+  if(!(P$MStrat %in% c("Match", "Presence"))){
+    stop("MatchStrategy must be Match or Presence.")
+  }
 
   #Misc Warnings
   if(P$EnSuc == 0){
@@ -284,9 +286,6 @@ CheckP <- function(P){
   }
   if(P$MatPref == 0 && !P$SMat && P$MDial != "None"){
     warning("MaleDialects only implemented when MatchPrefer is > 0 or or SaveMatch is manually set to TRUE.")
-  }
-  if(!(P$MStrat %in% c("Match", "Presence"))){
-    warning("MatchStrategy must be Match or Presence.")
   }
   return(P)
 }

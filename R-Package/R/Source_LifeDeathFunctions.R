@@ -39,7 +39,7 @@ BirthDeathCycle <- function(P, population){
   if(P$OvrLrn){population <- OverLearn(P, population, Vacancy)}
   
   #update breeding information
-  if(P$Social){
+  if(P$Social || P$SocPref > 0){
     Pop$Males$Bred[FatherInd] <- P$SocialBred
     Pop$Males$Bred[-FatherInd] <- P$SocialNotBred
   }

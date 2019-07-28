@@ -97,7 +97,7 @@ GenerateAdultBirds <- function(P, songs){
   }
   
   #Social information
-  if(P$Social){
+  if(P$Social || P$SocPref > 0){
     Males[,"Bred"] <- rep(P$SocialNotBred, 400)
   }
   

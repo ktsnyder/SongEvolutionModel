@@ -50,7 +50,7 @@ namespace SongEvolutionModelLibrary
                 }
             }
              
-            if(par.SocialCues){
+            if(par.SocialCues || par.SocialPreference > 0){
                 HashSet<int> Fathers = FatherInd.ToHashSet();
                 for(int i=0;i<par.NumBirds;i++){
                     if(Fathers.Contains(i)){

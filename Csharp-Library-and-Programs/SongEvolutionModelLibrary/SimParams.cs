@@ -361,6 +361,7 @@ namespace SongEvolutionModelLibrary{
             if(EncounterSuccess==0){
                 Console.WriteLine("Warning: EncounterSuccess set to zero, so not oblique learning can occur.");
             }
+            
 
         }
         public void CheckMin(float trait, string traitName, float min=0f){
