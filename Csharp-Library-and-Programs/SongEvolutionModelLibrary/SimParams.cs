@@ -133,8 +133,8 @@ namespace SongEvolutionModelLibrary{
                     FrequencyPreference=float.Parse(Params[50], CultureInfo.InvariantCulture);
                     RarePrefered=System.Convert.ToBoolean(Params[51]);
                     SocialPreference=float.Parse(Params[52], CultureInfo.InvariantCulture);
-                    NoisePreference=float.Parse(Params[53], CultureInfo.InvariantCulture);
                     InheritedPreferenceNoise=float.Parse(Params[54], CultureInfo.InvariantCulture);
+                    NoisePreference=float.Parse(Params[53], CultureInfo.InvariantCulture);
                     MatchUniform=System.Convert.ToBoolean(Params[55]);
                     NumDialects=System.Convert.ToInt32(Params[56]);
                     MaleDialects=Params[57].Replace("\r", "");
@@ -215,7 +215,7 @@ namespace SongEvolutionModelLibrary{
                 MatchPreference = matchPreference; ChooseMate = chooseMate;
                 FrequencyPreference = frequencyPreference; RarePrefered = rarePrefered;
                 SocialPreference = socialPreference; InheritedPreferenceNoise = inheritedPreferenceNoise;
-                NoisePreference = 1-(RepertoireSizePreference + MatchPreference + FrequencyPreference);
+                NoisePreference = 1-(RepertoireSizePreference + MatchPreference + FrequencyPreference + SocialPreference);
                 NumDialects = numDialects; MaleDialects = maleDialects;
                 FemaleEvolution = femaleEvolution; LogScale = logScale;
                 SaveMatch = TestRequirement(saveMatch, MatchPreference, femaleEvolution);
@@ -371,7 +371,7 @@ namespace SongEvolutionModelLibrary{
         }
         public void CheckMax(float trait, string traitName, float max=1f){
             if(trait > max){
-                throw new System.ArgumentException(string.Format("{0} cannot be less than {1}.", traitName,max));
+                throw new System.ArgumentException(string.Format("{0} cannot be More than {1}.", traitName,max));
             }
         }
         private void CheckTrait(float initial, float noise, float min, float max, string name, float absMax=1f){
