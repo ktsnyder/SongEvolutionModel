@@ -21,14 +21,14 @@ DefineParameters(Rows = 20, Cols = 20, Steps = 1,
   OverLearn = FALSE, OverLearnNoTut = 3, VerticalLearnCutOff = 0.25,
   ObliqueLearning = TRUE, VerticalLearning = TRUE, RepSizePrefer = 1,
   LogScale = TRUE, MatchPrefer = 0, FrequencyPrefer = 0,
-  Rare = TRUE, UniformMatch = TRUE, MatchStrategy = "Match",
-  Dialects = 1, MaleDialects = "None", FemaleEvolve = FALSE,
-  ChooseMate = FALSE, SocialCues = FALSE, SocialBred = 0.9,
-  SocialNotBred = 0.1, SaveMatch = NA, SaveAccuracy = NA,
-  SaveLearningThreshold = NA, SaveChancetoInvent = NA,
-  SaveChancetoForget = NA, SaveNames = FALSE, SaveAge = FALSE,
-  SaveMaleSong = FALSE, SaveFemaleSong = FALSE, numSim = 1000,
-  Seed = NA)
+  Rare = TRUE, SocialPrefer = 0, InherPreferenceNoise = 0,
+  UniformMatch = TRUE, MatchStrategy = "Match", Dialects = 1,
+  MaleDialects = "None", FemaleEvolve = FALSE, ChooseMate = FALSE,
+  SocialCues = FALSE, SocialBred = 0.9, SocialNotBred = 0.1,
+  SaveMatch = NA, SaveAccuracy = NA, SaveLearningThreshold = NA,
+  SaveChancetoInvent = NA, SaveChancetoForget = NA,
+  SaveNames = FALSE, SaveAge = FALSE, SaveMaleSong = FALSE,
+  SaveFemaleSong = FALSE, numSim = 1000, Seed = NA)
 }
 \arguments{
 \item{Rows}{the number of rows in the bird matrix}

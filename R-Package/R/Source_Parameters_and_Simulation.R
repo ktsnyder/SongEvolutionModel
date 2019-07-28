@@ -224,7 +224,6 @@ CheckP <- function(P){
   if(P$RSize0*(1+2*P$PerROh) > P$MaxRSize){
     stop(paste0("InitialSylRepSize and/or PrcntSylOverhang is too large for the given MaxSylRepSize. (", P$MaxRSize, ")"))
   }
-
   if(P$Dial < 1 ||
      P$Dial >= P$numBirds ||
      P$numBirds%%P$Dial != 0 ||
