@@ -65,7 +65,7 @@ ChooseFathers <- function(P, population, vacancy){
   #in both Global and Local varients
   NotAvail <- c(vacancy,which(population$Males$SylRep == 0)) #remove songless birds
   ProbBreed <- numeric(P$numBirds)
-  ProbBreed[(1:P$numBirds)[-NotAvail]] <- GetProbability(P, population, (1:P$numBirds)[-NotAvail])
+  ProbBreed[(1:P$numBirds)[-NotAvail]] <- GetReproductiveProbability(P, population, (1:P$numBirds)[-NotAvail])
 
   if(P$ScopeB){
     Fathers <- vector(mode="numeric", length(vacancy))
@@ -93,29 +93,55 @@ ChooseFathers <- function(P, population, vacancy){
 #' @param usableInd males that are alive and know at least one syllable
 #' @keywords birth female-choice
 #' @export
-GetProbability <- function(P, population, usableInd){
+GetReproductiveProbability <- function(P, population, usableInd){
   Choices <- population$Males[usableInd,]
   #Noise
   Bonus <- rep(P$NoisePref, length(usableInd))
+  
+  
   #SylRep
   if(P$RepPref != 0){
-    if(P$LogScl){
-      Rep <- log(Choices$SylRep)
+    if(P$LogScl){Rep <- log(Choices$SylRep)
     }else{Rep <- Choices$SylRep}
-    BadMale <- min(Rep)
-    Fraction <- 1/(max(Rep) - BadMale)
-    if(is.infinite(Fraction)){#if all males have the same rep size
-      RepBonus <- rep(P$RepPref,length(usableInd))
+    
+    WorstMale <- min(Rep)
+    if(max(Rep) == WorstMale){#if all males have the same rep size
+      RepBonus <- rep(1,length(usableInd))
     }else{
-      RepBonus <- (Rep - BadMale)*Fraction
+      Fraction <- 1/(max(Rep) - WorstMale)
+      RepBonus <- (Rep - WorstMale)*Fraction
     }
     Bonus <- Bonus + P$RepPref*RepBonus
   }
+  
+  
   #Match
   if(P$MatPref != 0){
-    MatchBonus <- P$MatPref*Choices$Match
     Bonus <- Bonus + P$MatPref*Choices$Match
   }
+  
+  
+  #Frequency
+  if(P$FreqPref != 0){
+    #get syllable frequency
+    SyllableFrequency <- colSums(population$MSongs[usableInd,])/length(usableInd)
+    if(P$Rare){
+      SyllableFrequency <- 1-SyllableFrequency
+    }
+    #add the syllable frequencies in each song
+    MSongFrequency <- sapply(usableInd, function(x) sum(SyllableFrequency[as.logical(population$MSongs[x,])]))
+    
+    #scale the freq values
+    WorstMale <- min(MSongFrequency)
+    if(max(MSongFrequency) == WorstMale){#if all males have the same rep size
+      RepBonus <- rep(1,length(usableInd))
+    }else{
+      Fraction <- 1/(max(MSongFrequency) - WorstMale)
+      FreqBonus <- (MSongFrequency - WorstMale)*Fraction
+    }
+    Bonus <- Bonus + P$FreqPref*FreqBonus
+  }
+  
   Bonus[which(Bonus< .001)] <- .001
   return(Bonus)
 }
