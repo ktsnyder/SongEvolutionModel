@@ -146,18 +146,21 @@ SongPlot <- function(P, songs, thin = 10, male=TRUE){
 #' @param trait a matrix of SEM data from a Basic sim (individual data)
 #' @keywords stats-plotting
 #' @export
-TerritoryHeatMap <- function(P, index=1, trait, max=NA){
+TerritoryHeatMap <- function(P, index=1, trait, max=NA,
+                             title='', xlab='', ylab='', font.lab=1,
+                             Letter='', LetterLine=1.5, LetterHeight=-1){
   if(is.na(max)){
     max <- max(trait[,index])
   }
     Matter <- matrix(trait[,index]/max, nrow=P$R)
-    plot(0,type="n", ylim=c(P$C,0), xlim=c(0,P$R),
-         ylab="", xlab="")
-    for(i in 1:P$R){#x
-      for(j in 1:P$C){#y
-        rect(i-1, j-1, i, j, col=rgb(0,0,0,Matter[i,j]), border=NA)
+    plot(0,type="n", ylim=c(P$R+.5,.5), xlim=c(.5,P$C+.5),
+         ylab=ylab, xlab=xlab, main=title, font.lab=font.lab)
+    for(i in 1:P$C){#x
+      for(j in 1:P$R){#y
+        rect(i-.5, j-.5, i+.5, j+.5, col=rgb(0,0,0,Matter[j,i]), border=NA)
       }
     }
+    mtext(text=Letter, side=2, las=1, line=LetterLine, at=LetterHeight, cex=.8)
   }
 
 #Plotting lineages (requires saving Name and FatherName UUIDs)
