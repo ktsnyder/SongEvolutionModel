@@ -144,6 +144,14 @@ SongPlot <- function(P, songs, thin = 10, male=TRUE){
 #' @param P a list of parameters
 #' @param index which column to plot
 #' @param trait a matrix of SEM data from a Basic sim (individual data)
+#' @param max maximum value for the trait
+#' @param title title of the plot
+#' @param xlab x axis label
+#' @param ylab y axis label
+#' @param font.lab label font
+#' @param Letter figure letter
+#' @param LetterLine horixzonal placement
+#' @param LetterHeight vertical placement
 #' @keywords stats-plotting
 #' @export
 TerritoryHeatMap <- function(P, index=1, trait, max=NA,
