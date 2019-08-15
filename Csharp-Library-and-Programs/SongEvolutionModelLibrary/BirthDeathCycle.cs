@@ -25,6 +25,11 @@ namespace SongEvolutionModelLibrary
                 pop.Age[NotVacant[i]] += 1;
             }
 
+            //Pick new mates
+            if(par.ChooseMate){
+                Songs.ChooseMates(par, pop);
+            }
+
             //Determine fathers and generate chicks
             int[] FatherInd = ChooseMaleFathers(par, pop, Vacant, NotVacant);
             for(int i=0;i<FatherInd.Length;i++){
@@ -36,8 +41,7 @@ namespace SongEvolutionModelLibrary
                 Learning.OverLearn(par, pop, Vacant, NotVacant);
             }
 
-            /*Allow for the female song to evolve and/or
-            let them pick new mates if old mate deceased*/
+            /*Allow the females to die and be replaced */
             if(par.FemaleEvolution){
                 int[] FemaleFathers = ChooseFemaleFathers(par, pop,
                                             Vacant, NotVacant, FatherInd);
@@ -45,14 +49,8 @@ namespace SongEvolutionModelLibrary
                     pop.FemaleSong[Vacant[i]] = pop.MaleSong[FatherInd[i]];
                 }
             }
-            if(par.ChooseMate){
-                Songs.ChooseMates(par, pop);
-            }                      
-            //update survival probability
-            if(par.AgeDeath){
-                UpdateDeathProbabilities(par, pop, FatherInd);
-            }
-            if(par.SocialCues){
+             
+            if(par.SocialCues || par.SocialPreference > 0){
                 HashSet<int> Fathers = FatherInd.ToHashSet();
                 for(int i=0;i<par.NumBirds;i++){
                     if(Fathers.Contains(i)){
@@ -61,8 +59,11 @@ namespace SongEvolutionModelLibrary
                         pop.Bred[i] = par.SocialNotBred;
                     }
                 }
+            }                    
+            //update survival probability
+            if(par.AgeDeath){
+                UpdateDeathProbabilities(par, pop, FatherInd);
             }
-
             return(pop);
         }
 
@@ -242,10 +243,24 @@ namespace SongEvolutionModelLibrary
             //Get the bonus for each category, combine, and return
             //Choices <- PotentialFathers$Males[UsableInd,]
             float[] FullBonus = new float[usableMales.Count];
-            //Noise
             float[] NoiseBonus = Enumerable.Repeat(par.NoisePreference, usableMales.Count).ToArray();
-            //Rep
-            float[] RepBonus = new float[usableMales.Count];
+            float[] RepBonus = CalculateRepertoireSizeBonus(par, pop, usableMales);
+            float[] MatBonus = CalculateMatchBonus(par, pop, usableMales);
+            float[] FreqBonus = CalculateFrequencyBonus(par, pop, usableMales);
+            float[] SocialBonus = CalculateSocialBonus(par, pop, usableMales);
+            
+            //Merge
+            for(int i=0;i<usableMales.Count;i++){
+                FullBonus[i] = NoiseBonus[i] + RepBonus[i] + MatBonus[i] + FreqBonus[i] +SocialBonus[i];
+                if(FullBonus[i] < .001f){FullBonus[i] = .001f;}
+            }
+
+            return(FullBonus);
+        }
+        
+        private static float[] CalculateRepertoireSizeBonus(SimParams par, Population pop,
+        List<int> usableMales){
+             float[] RepBonus = new float[usableMales.Count];
             if(par.RepertoireSizePreference != 0){
                 float[] Rep = new float[usableMales.Count];
                 if(par.LogScale){
@@ -269,28 +284,89 @@ namespace SongEvolutionModelLibrary
 
                 }
             }else{RepBonus = Enumerable.Repeat(0f, usableMales.Count).ToArray();}
-            
-            //Match
+            return(RepBonus);
+        }
+        private static float[] CalculateMatchBonus(SimParams par, Population pop,
+        List<int> usableMales){
             float[] MatBonus = new float[usableMales.Count];
             if(par.MatchPreference != 0){
-                float Bonus;
                 for(int i=0;i<usableMales.Count;i++){
-                    Bonus = par.MatchPreference*pop.Match[usableMales[i]];
-                    if(Bonus < .001){Bonus = .001f;}
-                    MatBonus[i] = Bonus;
+                    MatBonus[i] = par.MatchPreference*pop.Match[usableMales[i]];
                 }
             }else{MatBonus = Enumerable.Repeat(0f, usableMales.Count).ToArray();}
-
-            //Merge
-            for(int i=0;i<usableMales.Count;i++){
-                FullBonus[i] = NoiseBonus[i] + RepBonus[i] + MatBonus[i]; 
-            }
-            List<int> WorstMales = Enumerable.Range(0, FullBonus.Length).Where(x => FullBonus[x] < .001f).ToList();
-                for(int i=0;i<WorstMales.Count;i++){  
-                    FullBonus[WorstMales[i]] = .001f;                 
-                }
-            return(FullBonus);
+            return(MatBonus);
         }
+        private static float[] CalculateFrequencyBonus(SimParams par, Population pop,
+        List<int> usableMales){
+            float[] FreqBonus = new float[usableMales.Count];
+            if(par.FrequencyPreference != 0){
+                int[] RawSyllableCounts = new int[par.MaxSyllableRepertoireSize];
+                
+                //set up the frequency scores
+                for(int i=0;i<usableMales.Count;i++){
+                    for(int j=0;j<pop.MaleSong[usableMales[i]].Count;j++){
+                        RawSyllableCounts[pop.MaleSong[usableMales[i]][j]] += 1;
+                    }
+                }
+                float[] FinalSyllableCounts = new float[par.MaxSyllableRepertoireSize];
+                if(par.RarePrefered){
+                    for(int i=0;i<RawSyllableCounts.Length;i++){
+                        FinalSyllableCounts[i] = 1 - RawSyllableCounts[i]/(float)usableMales.Count; 
+                    }
+                }else{
+                    for(int i=0;i<RawSyllableCounts.Length;i++){
+                        FinalSyllableCounts[i] = RawSyllableCounts[i]/(float)usableMales.Count; 
+                    }
+                }
+                
+                //Get each male's score
+                float[] Rarity = new float[usableMales.Count];
+                float Score;
+                for(int i=0;i<usableMales.Count;i++){
+                    Score = 0f;
+                    for(int j=0;j<pop.MaleSong[usableMales[i]].Count;j++){
+                        Score += FinalSyllableCounts[pop.MaleSong[usableMales[i]][j]];
+                    }
+                    Rarity[i] = Score;
+                }
+
+                //standardize
+                float Worst = Rarity.Min();
+                float Best = Rarity.Max();
+                if(Worst == Best){
+                  FreqBonus = Enumerable.Repeat(par.FrequencyPreference, usableMales.Count).ToArray();  
+                }else{
+                    float Fraction = 1f/(Best - Worst);
+                    for(int i=0;i<usableMales.Count;i++){
+                        FreqBonus[i] = ((Rarity[i] - Worst)*Fraction)*par.FrequencyPreference;
+                    }
+                }
+            }else{FreqBonus = Enumerable.Repeat(0f, usableMales.Count).ToArray();}
+            return(FreqBonus);
+        }
+        private static float[] CalculateSocialBonus(SimParams par, Population pop,
+        List<int> usableMales){
+            float[] SocialBonus = new float[usableMales.Count];
+            if(par.SocialPreference != 0){
+                float[] Soc = new float[usableMales.Count];
+                for(int i=0;i<usableMales.Count;i++){
+                    Soc[i] = pop.Bred[usableMales[i]];
+                }
+                float Worst = Soc.Min();
+                float Best = Soc.Max();
+                if(Worst == Best){
+                  SocialBonus = Enumerable.Repeat(par.SocialPreference, usableMales.Count).ToArray();  
+                }else{
+                    float Fraction = 1f/(Best - Worst);
+                    for(int i=0;i<usableMales.Count;i++){
+                        SocialBonus[i] = ((Soc[i] - Worst)*Fraction)*par.SocialPreference;
+                    }
+
+                }
+            }else{SocialBonus = Enumerable.Repeat(0f, usableMales.Count).ToArray();}
+            return(SocialBonus);
+        }
+        
         
         //Reset for next run        
         private static Population UpdateDeathProbabilities(SimParams par, Population pop, 

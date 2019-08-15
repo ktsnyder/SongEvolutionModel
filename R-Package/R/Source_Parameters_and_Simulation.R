@@ -46,8 +46,10 @@
 #' @param RepSizePrefer the fraction of female preference dedicated to larger repertoires
 #' @param LogScale whether females percieve repertoire size on a natural log scale (TRUE) or not (FALSE)
 #' @param MatchPrefer the fraction of female preference dedicated to template matching
+#' @param FrequencyPrefer the fraction of female preference dedicated to common or rare syllables
+#' @param Rare whether females prefer rares (TRUE) or more common (FALSE) syllables
 #' @param UniformMatch whether all females have the same song template (TRUE) or variations on a template (FALSE)
-#' @param MatchScale an equation for how matching is perceived; not yet implemented!
+#' @param MatchStrategy the way match is calculated; Can be either Match (male must have the correct syllables and no extras) or Presence (males must have ths correct syllables)
 #' @param Dialects the number of dialects; must be a factor of the matrix size
 #' @param MaleDialects whether males start the simulation with dialects; can be "None" (all males are similar to dialect 1), "Similar" (male songs are in teh correct syllable space, but are not identical to female songs), "Same" (male song temapltes are identicle to their female's template)
 #' @param FemaleEvolve whether the female templates can evolve (TRUE) or stay static throughout teh simmulation (FALSE)
@@ -81,7 +83,10 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                              ConsensusNoTut=8, ConsensusStrategy="Conform",
                              OverLearn=FALSE, OverLearnNoTut=3, VerticalLearnCutOff=.25,
                              ObliqueLearning=TRUE, VerticalLearning=TRUE,
-                             RepSizePrefer=1, LogScale=TRUE, MatchPrefer=0, UniformMatch=TRUE, MatchScale=1,
+                             RepSizePrefer=1, LogScale=TRUE, MatchPrefer=0,
+                             FrequencyPrefer=0, Rare=TRUE,
+                             SocialPrefer=0, InherPreferenceNoise=0,
+                             UniformMatch=TRUE, MatchStrategy="Match",
                              Dialects=1, MaleDialects="None", FemaleEvolve=FALSE, ChooseMate=FALSE,
                              SocialCues=FALSE, SocialBred=.9, SocialNotBred=.1,
                              SaveMatch=NA, SaveAccuracy=NA, SaveLearningThreshold=NA, SaveChancetoInvent=NA, SaveChancetoForget=NA,
@@ -94,21 +99,21 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
     InitProp <- 0
   }
 
-  if((LearnerStrategy %in% c("Add", "AddForget", "Forget", "Consensus")) == FALSE){
+  if(!(LearnerStrategy %in% c("Add", "AddForget", "Forget", "Consensus"))){
     stop("LearnerStrategy must be either Add, Forget, AddForget, or Consensus.")
   }
   if(LearnerStrategy == "Consensus"){
-    Consensus=TRUE
-    Add=TRUE
-    Forget=TRUE
+    Consensus <- TRUE
+    Add <- TRUE
+    Forget <- TRUE
   }else{
-    Consensus=FALSE
+    Consensus <- FALSE
     if(LearnerStrategy %in% c("Add", "AddForget")){
-      Add=TRUE
-    }else{Add=FALSE}
+      Add <- TRUE
+    }else{Add <- FALSE}
     if(LearnerStrategy %in% c("AddForget", "Forget")){
-      Forget=TRUE
-    }else{Forget=FALSE}
+      Forget <- TRUE
+    }else{Forget <- FALSE}
   }
 
   #match the saves
@@ -137,8 +142,11 @@ DefineParameters <- function(Rows=20, Cols=20, Steps=1,
                            ConNoTut=ConsensusNoTut, OvrLrn=OverLearn, OLNoTut=OverLearnNoTut,
                            Obliq=ObliqueLearning, Vert=VerticalLearning,
                            VertLrnCut=VerticalLearnCutOff,
-                           RepPref=RepSizePrefer, LogScl=LogScale, MatPref=MatchPrefer,
-                           NoisePref=1-(RepSizePrefer + MatchPrefer), UniMat=UniformMatch, MScl=MatchScale,
+                           RepPref=RepSizePrefer, LogScl=LogScale,
+                           MatPref=MatchPrefer, MStrat=MatchStrategy,
+                           FreqPref=FrequencyPrefer, Rare=Rare,
+                           SocPref=SocialPrefer, IPrefN=InherPreferenceNoise,
+                           NoisePref=1-(RepSizePrefer + MatchPrefer + FrequencyPrefer + SocialPrefer), UniMat=UniformMatch,
                            Dial=Dialects, MDial=MaleDialects, FEvo=FemaleEvolve, ChoMate=ChooseMate,
                            Social=SocialCues, SocialBred=SocialBred, SocialNotBred=SocialNotBred,
                            SMat=SaveMatch, SAcc=SaveAccuracy, SLrn=SaveLearningThreshold,
@@ -173,6 +181,9 @@ CheckP <- function(P){
   CheckMinMaxInt(P$PDead,"PrcntRandomDeath", .01, .9, TRUE, FALSE)
   CheckMinMaxInt(P$RepPref, "RepSizePrefer", 0, 1, TRUE, FALSE)
   CheckMinMaxInt(P$MatPref, "MatchPrefer", 0, 1, TRUE, FALSE)
+  CheckMinMaxInt(P$FreqPref, "FrequencyPrefer", 0, 1, TRUE, FALSE)
+  CheckMinMaxInt(P$SocPref, "SocialPrefer", 0, 1, TRUE, FALSE)
+  CheckMinMaxInt(P$IPrefN, "InherPreferNoise", 0, .5, TRUE, FALSE)
   CheckMinMaxInt(P$DeadThrsh,"DeathThreshold", .0001, .2*P$numBirds, TRUE, FALSE)
   CheckMinMaxInt(P$Pc,"ChickSurvival", .1, 1, TRUE, FALSE)
   CheckMinMaxInt(P$SocialBred,"SocialBred", .01, .99, TRUE, FALSE)
@@ -198,6 +209,7 @@ CheckP <- function(P){
   CheckBool(P$ScopeT,"LocalTutor")
   CheckBool(P$Vert, "VerticalLearning")
   CheckBool(P$Social,"SocialCues")
+  CheckBool(P$Rare,"Rare")
 
 
   #make sure all of the trait vals line up
@@ -212,7 +224,6 @@ CheckP <- function(P){
   if(P$RSize0*(1+2*P$PerROh) > P$MaxRSize){
     stop(paste0("InitialSylRepSize and/or PrcntSylOverhang is too large for the given MaxSylRepSize. (", P$MaxRSize, ")"))
   }
-
   if(P$Dial < 1 ||
      P$Dial >= P$numBirds ||
      P$numBirds%%P$Dial != 0 ||
@@ -224,24 +235,24 @@ CheckP <- function(P){
          3) Must be a factor of the number of birds.
          4) Must be less than or equal to MaxSylRepSize/(InitialSylRepSize*(1+2*PrcntSylOverhang)).")
   }
-  if((P$MDial %in% c("None", "Similar", "Same")) == FALSE){
+  if(!(P$MDial %in% c("None", "Similar", "Same"))){
     stop("MaleDialects must be None, Similar, or Same.")
   }
-  if((P$ConsenS %in% c("Conform", "AllNone", "Percentage")) == FALSE){
+  if(!(P$ConsenS %in% c("Conform", "AllNone", "Percentage"))){
     stop("Consensus Strategy must be Conform, AllNone, or Percentage.")
   }
-  if(P$RepPref+P$MatPref > 1){
-    stop("RepSizePrefer+MatchPrefer cannot exceed 1")
+  if(P$RepPref+P$MatPref+P$FreqPref+P$SocPref > 1){
+    stop("RepSizePrefer + MatchPrefer + FrequencyPrefer + SOcialPrefer cannot exceed 1")
   }
 
-  if(is.na(P$Seed)==FALSE && is.numeric(P$Seed) == FALSE){
+  if(!is.na(P$Seed) && !is.numeric(P$Seed)){
     stop("Seed must be a number or NA")
   }
-  if(P$MatPref == 0  && P$SMat == FALSE && P$SFSng == TRUE){
+  if(P$MatPref == 0  && !P$SMat && P$SFSng){
     stop("Cannot save female song unless it is generated.
          It is not generated unless 1) MatchPrefer > 0,
-         2) FemaleEvolve == TRUE,
-         or 3) SaveMatch == TRUE.")
+         2) FemaleEvolve = TRUE,
+         or 3) SaveMatch = TRUE.")
   }
   if((P$LisThrsh%%1 != 0 && P$LisThrsh > 1) || (P$LisThrsh > P$MaxRSize)  || P$LisThrsh < 0){
     stop(paste0("ListeningThreshold must either be an integer from 1 to MaxSylRepSize (", P$MaxRSize, ")",
@@ -253,7 +264,9 @@ CheckP <- function(P){
                 "or a fraction representing a precentage.*
                 *If .999 or greater is typed, it is converted to 100%."))
   }
-
+  if(!(P$MStrat %in% c("Match", "Presence"))){
+    stop("MatchStrategy must be Match or Presence.")
+  }
 
   #Misc Warnings
   if(P$EnSuc == 0){
@@ -268,14 +281,11 @@ CheckP <- function(P){
     warning("Small DeathThresholds decrease the chances that any birds will survive
             the selection process long enough to reach the MaxAge.")
   }
-  if(P$FEvo == TRUE && P$MatPref ==0){
+  if(P$FEvo && P$MatPref ==0){
     warning("FemaleEvolve implimented only when females have a match preference > 0.")
   }
   if(P$MatPref == 0 && !P$SMat && P$MDial != "None"){
     warning("MaleDialects only implemented when MatchPrefer is > 0 or or SaveMatch is manually set to TRUE.")
-  }
-  if(P$MScl != 1){
-    warning("MatchScale is not yet implemented!!!")
   }
   return(P)
 }
@@ -292,6 +302,7 @@ CheckP <- function(P){
 #' @keywords error-check
 #' @export
 CheckTrait <- function(initial, noise, min, max, name, absMax=1){
+  
   if(min >= max){
     stop(paste("The min for", name, "must be less than the max."))
   }
@@ -406,7 +417,7 @@ ReloadParam <- function(filePath){
   Final <- rbind.data.frame(Raw$V2, stringsAsFactors=FALSE)
   names(Final) <- Raw$V1
   Log <- which(Final %in% c("TRUE", "FALSE", "True", "False"))
-  Char <- which(names(Final) %in% c("MDial", "ConsenS"))
+  Char <- which(names(Final) %in% c("MDial", "ConsenS", "MStrat"))
   suppressWarnings(Final[,-c(Char, Log)] <- as.numeric(Final[,-c(Char, Log)]))
   Final[,Log] <- as.logical(Final[,Log])
   return(Final)
@@ -437,7 +448,7 @@ ReloadParam <- function(filePath){
 SEMSimulation <- function(P, type='Basic', folderName=NA, save=TRUE, return=FALSE, verbose=TRUE, ...){
   Time <- proc.time()
   MiscArgs <- list(...)
-  if(is.na(P$Seed) == FALSE){
+  if(!is.na(P$Seed)){
     set.seed(P$Seed)
   }
 
@@ -446,7 +457,7 @@ SEMSimulation <- function(P, type='Basic', folderName=NA, save=TRUE, return=FALS
     if(is.na(folderName)){
       folderName <- file.path(format(Sys.time(), "%F_%H-%M-%S"))
     }
-    if(dir.exists(file.path(folderName)) == FALSE){
+    if(!dir.exists(file.path(folderName))){
       dir.create(file.path(folderName))
     }
   }
@@ -721,7 +732,7 @@ InsultSimulation <- function(P, insultP, when, freq=200){
       #fix songs if needed
       if( (P$Dial != insultP$Dial) ||
           (P$UniMat != insultP$UniMat) ||
-          (insultP$MatPref != 0 && (exists('FSongs', where=Population) == FALSE)) ){
+          (insultP$MatPref != 0 && !(exists('FSongs', where=Population))) ){
             Population[["FSongs"]] <- CreateFemaleSongs(insultP)
             Population$Males[["Match"]] <- TestMatch(P, Population$MSongs, Population$FSongs)
       }

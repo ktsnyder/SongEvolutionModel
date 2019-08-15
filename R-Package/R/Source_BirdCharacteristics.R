@@ -85,24 +85,27 @@ AssignFemale <- function(P, maleSong, femaleSong){
 TestMatch <- function(P, maleSong, femaleSong){
   #find the mismatch between the two songs.
 
-  #get num syls a female has that a male lacks
-  Missing <- integer(nrow(femaleSong))
-  for(i in 1:nrow(femaleSong)){
-    Missing[i]  <- sum((femaleSong[i,] == 1) & (femaleSong[i,] != maleSong[i,]))
-  }
-
-  #how long is the male song vs. the female song
-  FSyls <- rowSums(femaleSong)
-  Extra <- rowSums(maleSong) - FSyls
-  Extra[which(Extra < 0)] <- 0
-
-  #calc match
-  if(P$MScl == 1){
+  if(P$MStrat == "Match"){
+    #get num syls a female has that a male lacks
+    Missing <- integer(nrow(femaleSong))
+    for(i in 1:nrow(femaleSong)){
+      Missing[i]  <- sum((femaleSong[i,] == 1) & (femaleSong[i,] != maleSong[i,]))
+    }
+    
+    #how long is the male song vs. the female song
+    FSyls <- rowSums(femaleSong)
+    Extra <- rowSums(maleSong) - FSyls
+    Extra[which(Extra < 0)] <- 0
+    
     Match <- 1 - (((Extra+Missing))/FSyls)
+    Match[which(Match < 0)] <- 0
   }else{
-    stop("NOT YET READY")
+    Overlap <- integer(nrow(femaleSong))
+    for(i in 1:nrow(femaleSong)){
+      Overlap[i]  <- length(which(colSums(rbind(femaleSong[i,], maleSong[i,]))==2))
+    }
+    Match <- Overlap/rowSums(femaleSong)
   }
-  Match[which(Match < 0)] <- 0
   return(Match)
 }
 
@@ -326,7 +329,7 @@ FinalDirections <- function(P){
   DirList[[1]] <- EachStep
   #####
   for(i in seq_along((P$Steps+1):(max(P$R, P$C)))){
-    DirList[[i+1]] <- NextStepDirectionsMain(DirList[[i]], StepOne)
+    DirList[[i+1]] <- NextStepDirections(DirList[[i]], StepOne)
   }
   #####
   return(DirList)

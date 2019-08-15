@@ -4,7 +4,9 @@
 \alias{TerritoryHeatMap}
 \title{Territory Heat Map}
 \usage{
-TerritoryHeatMap(P, index = 1, trait, max = NA)
+TerritoryHeatMap(P, index = 1, trait, max = NA, title = "",
+  xlab = "", ylab = "", font.lab = 1, Letter = "",
+  LetterLine = 1.5, LetterHeight = -1)
 }
 \arguments{
 \item{P}{a list of parameters}
@@ -12,6 +14,22 @@ TerritoryHeatMap(P, index = 1, trait, max = NA)
 \item{index}{which column to plot}
 
 \item{trait}{a matrix of SEM data from a Basic sim (individual data)}
+
+\item{max}{maximum value for the trait}
+
+\item{title}{title of the plot}
+
+\item{xlab}{x axis label}
+
+\item{ylab}{y axis label}
+
+\item{font.lab}{label font}
+
+\item{Letter}{figure letter}
+
+\item{LetterLine}{horixzonal placement}
+
+\item{LetterHeight}{vertical placement}
 }
 \description{
 Creates a heat map showing the magnitude of a trait in each territory for a given timestep.  Requires individual data.

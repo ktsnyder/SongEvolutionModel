@@ -18,6 +18,13 @@ BirthDeathCycle <- function(P, population){
     population <- ObliqueLearning(P, population, Vacancy)
     population$Males$Age[-Vacancy] <- population$Males$Age[-Vacancy] + 1
   }
+  
+  if(P$ChoMat){#Females can pick a male that matches them well
+    Assign <- AssignFemale(P, TerritorialBirds$MSongs,
+                           TerritorialBirds$FSongs)
+    TerritorialBirds$FSongs <- TerritorialBirds$FSongs[Assign[[1]],]
+    TerritorialBirds$Males$Match <- Assign[[2]]
+  }
 
   #Determine fathers and generate chicks
   FatherInd <- ChooseFathers(P, population, Vacancy)
@@ -25,17 +32,17 @@ BirthDeathCycle <- function(P, population){
   population$Males[Vacancy,] <- Chicks$Males
   population$MSongs[Vacancy,] <- Chicks$MSongs
 
-  #Allow for the female song to evolve and/or
-  #let them pick new mates if old mate deceased
+  #Allow females to die with their mates so female song evolves
   if(P$FEvo){population <- FemaleEvolve(P, population, Vacancy, FatherInd)}
-  if(P$ChoMat){#Females can pick a male that matches them well
-    Assign <- AssignFemale(P, TerritorialBirds$MSongs[Vacancy,],
-                           TerritorialBirds$FSongs[Vacancy,])
-    TerritorialBirds$FSongs[Vacancy,] <- TerritorialBirds$FSongs[Vacancy[Assign[[1]]],]
-    TerritorialBirds$males$Match[Vacancy] <- Assign[[2]]
-  }
+  
   #allow for chicks to overlearn, update match and sylrep
   if(P$OvrLrn){population <- OverLearn(P, population, Vacancy)}
+  
+  #update breeding information
+  if(P$Social || P$SocPref > 0){
+    Pop$Males$Bred[FatherInd] <- P$SocialBred
+    Pop$Males$Bred[-FatherInd] <- P$SocialNotBred
+  }
 
   #update survival probability
   if(P$DStrat){population <- UpdateProbabilities(P, FatherInd, population)}
@@ -59,7 +66,7 @@ ChooseFathers <- function(P, population, vacancy){
   #in both Global and Local varients
   NotAvail <- c(vacancy,which(population$Males$SylRep == 0)) #remove songless birds
   ProbBreed <- numeric(P$numBirds)
-  ProbBreed[(1:P$numBirds)[-NotAvail]] <- GetProbability(P, population, (1:P$numBirds)[-NotAvail])
+  ProbBreed[(1:P$numBirds)[-NotAvail]] <- GetReproductiveProbability(P, population, (1:P$numBirds)[-NotAvail])
 
   if(P$ScopeB){
     Fathers <- vector(mode="numeric", length(vacancy))
@@ -87,29 +94,72 @@ ChooseFathers <- function(P, population, vacancy){
 #' @param usableInd males that are alive and know at least one syllable
 #' @keywords birth female-choice
 #' @export
-GetProbability <- function(P, population, usableInd){
+GetReproductiveProbability <- function(P, population, usableInd){
   Choices <- population$Males[usableInd,]
   #Noise
   Bonus <- rep(P$NoisePref, length(usableInd))
+  
+  
   #SylRep
   if(P$RepPref != 0){
-    if(P$LogScl){
-      Rep <- log(Choices$SylRep)
+    if(P$LogScl){Rep <- log(Choices$SylRep)
     }else{Rep <- Choices$SylRep}
-    BadMale <- min(Rep)
-    Fraction <- 1/(max(Rep) - BadMale)
-    if(is.infinite(Fraction)){#if all males have the same rep size
-      RepBonus <- rep(P$RepPref,length(usableInd))
+    
+    WorstMale <- min(Rep)
+    if(max(Rep) == WorstMale){#if all males have the same rep size
+      RepBonus <- rep(1,length(usableInd))
     }else{
-      RepBonus <- (Rep - BadMale)*Fraction
+      Fraction <- 1/(max(Rep) - WorstMale)
+      RepBonus <- (Rep - WorstMale)*Fraction
     }
     Bonus <- Bonus + P$RepPref*RepBonus
   }
+  
+  
   #Match
   if(P$MatPref != 0){
-    MatchBonus <- P$MatPref*Choices$Match
     Bonus <- Bonus + P$MatPref*Choices$Match
   }
+  
+  
+  #Frequency
+  if(P$FreqPref != 0){
+    #get syllable frequency
+    SyllableFrequency <- colSums(population$MSongs[usableInd,])/length(usableInd)
+    if(P$Rare){
+      SyllableFrequency <- 1-SyllableFrequency
+    }
+    #add the syllable frequencies in each song
+    MSongFrequency <- sapply(usableInd, function(x) sum(SyllableFrequency[as.logical(population$MSongs[x,])]))
+    
+    #scale the freq values
+    WorstMale <- min(MSongFrequency)
+    if(max(MSongFrequency) == WorstMale){#if all males have the same rep size
+      RepBonus <- rep(1,length(usableInd))
+    }else{
+      Fraction <- 1/(max(MSongFrequency) - WorstMale)
+      FreqBonus <- (MSongFrequency - WorstMale)*Fraction
+    }
+    Bonus <- Bonus + P$FreqPref*FreqBonus
+  }
+  
+  
+  
+  #social
+  if(P$SocPref != 0){
+    Soc <- Choices$Bred
+    
+    WorstMale <- min(Soc)
+    if(max(Soc) == WorstMale){#if all males have the same rep size
+      SocBonus <- rep(1,length(usableInd))
+    }else{
+      Fraction <- 1/(max(Soc) - WorstMale)
+      RepBonus <- (Soc - WorstMale)*Fraction
+    }
+    Bonus <- Bonus + P$SocPref*SocBonus
+  }
+  
+  
   Bonus[which(Bonus< .001)] <- .001
   return(Bonus)
 }
