@@ -118,19 +118,20 @@ TraitPlot <- function(trait, xlab="Time Steps", ylab){
 #' @param songs male or female song data from  simulation
 #' @param thin how often to sample a step of song data for the SongEvolve() plots; This is graphically intensive when there are a lot of syllables (default is 500), so ideally do not plot more than 100-200 time steps.
 #' @param male whether male songs are being plotted; affects the y-axis label
+#' @param xlab x axis label
 #' @keywords stats-plotting
 #' @export
-SongPlot <- function(P, songs, thin = 10, male=TRUE){
+SongPlot <- function(P, songs, thin = 10, male=TRUE, xlab="Time Steps"){
   if(male){
     Type <- "Male"
   }else{
     Type <- "Female"
   }
   songs <- songs[,seq(1,ncol(songs),by=thin)]/P$numBirds
-  plot(0, type="n",ylim=c(P$MaxRSize, 1), xlim=c(1, P$nSim/thin),
-       xlab=paste0("TimeStep/",thin), ylab=paste(Type, "Syllables"), font.lab=2,
+  plot(0, type="n",ylim=c(P$MaxRSize, 1), xlim=c(1, ncol(songs)),
+       xlab=xlab, ylab=paste(Type, "Syllables"), font.lab=2,
        cex.lab=1.2)
-  for(i in 1:(1+ P$nSim/thin)){
+  for(i in seq_along(songs[1,])){
     for(j in 1:P$MaxRSize){
       rect(i-1, j-1, i, j, col=rgb(0, 0, 0, songs[j,i]), border=NA)
     }
